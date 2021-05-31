@@ -28,8 +28,6 @@ class Events(commands.Cog):
         with open('SERVER_SETTINGS.json', 'r') as file:
             server_data = json.load(file)
 
-        # the dictionary in index 0 will save a key:value pair consisting of member id's and member nicknames
-        # the list in index 1 will store the lists for the server
         del server_data[str(guild.id)]
 
         with open('SERVER_SETTINGS.json', 'w') as file:
