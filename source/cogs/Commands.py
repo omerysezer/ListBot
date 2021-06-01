@@ -51,6 +51,24 @@ class Commands(commands.Cog):
 
         await ctx.channel.send(f'Your name is {name}')
 
+    @commands.command()
+    @commands.guild_only()
+    async def create(self, ctx, *, name):
+        list_name = name
+        guild_id = str(ctx.guild.id)
+        role_id = (await ctx.guild.create_role(name=list_name, mentionable=True)).id
+
+        with open('SERVER_SETTINGS.json', 'r') as file:
+            server_settings = json.load(file)
+
+        yes_list, no_list, maybe_list = [], [], []
+        server_settings[guild_id][1].append([list_name, role_id, yes_list, no_list, maybe_list])
+
+        with open('SERVER_SETTINGS.json', 'w') as file:
+            json.dump(server_settings, file)
+
+        await ctx.channel.send(f'Created a new list: \'{list_name}\'')
+
 
 def setup(bot):
     bot.add_cog(Commands(bot))
