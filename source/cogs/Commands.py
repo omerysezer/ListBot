@@ -21,5 +21,20 @@ class Commands(commands.Cog):
         with open('SERVER_SETTINGS.json', 'w') as file:
             json.dump(server_data, file)
 
+    @commands.command()
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def change_users_name(self, ctx, member: discord.Member, *, name):
+        guild_key = str(ctx.guild.id)
+        member_key = str(member.id)
+        with open('SERVER_SETTINGS.json', 'r') as file:
+            server_data = json.load(file)
+
+        server_data[guild_key][0][member_key] = name
+
+        with open('SERVER_SETTINGS.json', 'w') as file:
+            json.dump(server_data, file)
+
+
 def setup(bot):
     bot.add_cog(Commands(bot))
