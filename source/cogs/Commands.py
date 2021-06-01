@@ -7,7 +7,9 @@ class Commands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-
+    '''
+    Command that allows user to change their nickname
+    '''
     @commands.command()
     @commands.guild_only()
     async def change_name(self, ctx, name):
@@ -21,6 +23,9 @@ class Commands(commands.Cog):
         with open('SERVER_SETTINGS.json', 'w') as file:
             json.dump(server_data, file)
 
+    '''
+    Command that allows admins to change other users nicknames
+    '''
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
@@ -35,6 +40,9 @@ class Commands(commands.Cog):
         with open('SERVER_SETTINGS.json', 'w') as file:
             json.dump(server_data, file)
 
+    '''
+    command that allows the user to see what their current nickname is
+    '''
     @commands.command()
     @commands.guild_only()
     async def name(self, ctx):
@@ -51,6 +59,9 @@ class Commands(commands.Cog):
 
         await ctx.channel.send(f'Your name is {name}')
 
+    '''
+    Command that allows the user to create a list
+    '''
     @commands.command()
     @commands.guild_only()
     async def create(self, ctx, *, name):
@@ -69,6 +80,9 @@ class Commands(commands.Cog):
 
         await ctx.channel.send(f'Created a new list: \'{list_name}\'')
 
+    '''
+    Command that allows the user to add themselves to the yes category of a list
+    '''
     @commands.command()
     @commands.guild_only()
     async def yes(self, ctx, list_index):
@@ -98,6 +112,9 @@ class Commands(commands.Cog):
         with open('SERVER_SETTINGS.json', 'w') as file:
             json.dump(server_settings, file)
 
+    '''
+    Command that allows users to add themselves to the no category of a list
+    '''
     @commands.command()
     @commands.guild_only()
     async def no(self, ctx, list_index):
@@ -115,18 +132,21 @@ class Commands(commands.Cog):
         if ctx.author.id in list[2]:
             list[2].remove(ctx.author.id)
             list[3].append(ctx.author.id)
-            await ctx.author.add_roles(list_role)
+            await ctx.author.remove_roles(list_role)
         if ctx.author.id in list[4]:
             list[4].remove(ctx.author.id)
             list[3].append(ctx.author.id)
-            await ctx.author.add_roles(list_role)
+            await ctx.author.remove_roles(list_role)
         if ctx.author.id not in list[3]:
             list[3].append(ctx.author.id)
-            await ctx.author.add_roles(list_role)
+            await ctx.author.remove_roles(list_role)
 
         with open('SERVER_SETTINGS.json', 'w') as file:
             json.dump(server_settings, file)
 
+    '''
+    Command that allows users to add themselves to the maybe category of a list
+    '''
     @commands.command()
     @commands.guild_only()
     async def maybe(self, ctx, list_index):
@@ -144,14 +164,14 @@ class Commands(commands.Cog):
         if ctx.author.id in list[2]:
             list[2].remove(ctx.author.id)
             list[4].append(ctx.author.id)
-            await ctx.author.add_roles(list_role)
+            await ctx.author.remove_roles(list_role)
         if ctx.author.id in list[3]:
             list[3].remove(ctx.author.id)
             list[4].append(ctx.author.id)
-            await ctx.author.add_roles(list_role)
+            await ctx.author.remove_roles(list_role)
         if ctx.author.id not in list[4]:
             list[4].append(ctx.author.id)
-            await ctx.author.add_roles(list_role)
+            await ctx.author.remove_roles(list_role)
 
         with open('SERVER_SETTINGS.json', 'w') as file:
             json.dump(server_settings, file)
