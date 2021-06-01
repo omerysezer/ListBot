@@ -69,6 +69,36 @@ class Commands(commands.Cog):
 
         await ctx.channel.send(f'Created a new list: \'{list_name}\'')
 
+    @commands.command()
+    @commands.guild_only()
+    async def yes(self, ctx, list_index):
+        guild_key = str(ctx.guild.id)
+        index = int(list_index) - 1
+
+        with open('SERVER_SETTINGS.json', 'r') as file:
+            server_settings = json.load(file)
+
+        list = server_settings[guild_key][1][index]
+        list_role = discord.utils.get(ctx.guild.roles, id=list[1])
+
+        if ctx.author.id in list[2]:
+            return
+        if ctx.author.id in list[3]:
+            list[3].remove(ctx.author.id)
+            list[2].append(ctx.author.id)
+            await ctx.author.add_roles(list_role)
+        if ctx.author.id in list[4]:
+            list[4].remove(ctx.author.id)
+            list[2].append(ctx.author.id)
+            await ctx.author.add_roles(list_role)
+        if ctx.author.id not in list[2]:
+            list[2].append(ctx.author.id)
+            print(list[2])
+            await ctx.author.add_roles(list_role)
+
+        with open('SERVER_SETTINGS.json', 'w') as file:
+            json.dump(server_settings, file)
+
 
 def setup(bot):
     bot.add_cog(Commands(bot))
