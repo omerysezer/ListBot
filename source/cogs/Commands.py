@@ -171,6 +171,35 @@ class Commands(commands.Cog):
         with open('SERVER_SETTINGS.json', 'w') as file:
             json.dump(server_settings, file)
 
+    '''
+    Command that displays all the lists for the server
+    '''
+    @commands.command()
+    @commands.guild_only()
+    async def lists(self, ctx):
+        guild_key = str(ctx.guild.id)
+
+        with open('SERVER_SETTINGS.json', 'r') as file:
+            server_settings = json.load(file)
+
+        server_lists = server_settings[guild_key][1]
+
+        server_lists = [list[0] for list in server_lists]
+
+        lists_text = ''
+
+        for i in range(len(server_lists)):
+            lists_text += f'**{i+1}.** {server_lists[i]}\n'
+
+        embed = discord.Embed(
+            title='Lists',
+            color=0x8f24f9
+        )
+
+        embed.add_field(name='\u200b', value=lists_text)
+
+        await ctx.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Commands(bot))
