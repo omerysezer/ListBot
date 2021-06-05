@@ -1,3 +1,4 @@
+from typing import Optional
 import discord
 from discord.ext import commands
 import json
@@ -8,28 +9,20 @@ class Commands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     '''
-    Command that allows user to change their nickname
+    Command that allows admins to change other users nicknames and users to set their own names
     '''
     @commands.command()
     @commands.guild_only()
-    async def change_name(self, ctx, name):
-        new_name = name
-        guild_key = str(ctx.guild.id)
-        with open('SERVER_SETTINGS.json', 'r') as file:
-            server_data = json.load(file)
+    async def setname(self, ctx, member: Optional[discord.Member] = None, *, name):
+        admin_req = False
+        if member:
+            admin_req = True
+        else:
+            member = ctx.author
 
-        server_data[guild_key][0][ctx.message.author.id] = name
+        if admin_req and not ctx.message.author.guild_permissions.administrator:
+            return
 
-        with open('SERVER_SETTINGS.json', 'w') as file:
-            json.dump(server_data, file)
-
-    '''
-    Command that allows admins to change other users nicknames
-    '''
-    @commands.command()
-    @commands.guild_only()
-    @commands.has_permissions(administrator=True)
-    async def change_users_name(self, ctx, member: discord.Member, *, name):
         guild_key = str(ctx.guild.id)
         member_key = str(member.id)
         with open('SERVER_SETTINGS.json', 'r') as file:
@@ -39,6 +32,8 @@ class Commands(commands.Cog):
 
         with open('SERVER_SETTINGS.json', 'w') as file:
             json.dump(server_data, file)
+
+        await ctx.channel.send(f'The name for {member.mention} has been set to **\'{name}\'**')
 
     '''
     command that allows the user to see what their current nickname is
