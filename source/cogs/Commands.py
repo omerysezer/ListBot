@@ -1,3 +1,4 @@
+import itertools
 from typing import Optional
 import discord
 from discord.ext import commands
@@ -8,9 +9,11 @@ class Commands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
     '''
     Command that allows admins to change other users nicknames and users to set their own names
     '''
+
     @commands.command()
     @commands.guild_only()
     async def setname(self, ctx, member: Optional[discord.Member] = None, *, name):
@@ -38,6 +41,7 @@ class Commands(commands.Cog):
     '''
     command that allows the user to see what their current nickname is
     '''
+
     @commands.command()
     @commands.guild_only()
     async def name(self, ctx):
@@ -57,6 +61,7 @@ class Commands(commands.Cog):
     '''
     Command that allows the user to create a list
     '''
+
     @commands.command()
     @commands.guild_only()
     async def create(self, ctx, *, name):
@@ -78,6 +83,7 @@ class Commands(commands.Cog):
     '''
     Command that allows the user to add themselves to the yes category of a list
     '''
+
     @commands.command()
     @commands.guild_only()
     async def yes(self, ctx, list_index):
@@ -110,6 +116,7 @@ class Commands(commands.Cog):
     '''
     Command that allows users to add themselves to the no category of a list
     '''
+
     @commands.command()
     @commands.guild_only()
     async def no(self, ctx, list_index):
@@ -142,6 +149,7 @@ class Commands(commands.Cog):
     '''
     Command that allows users to add themselves to the maybe category of a list
     '''
+
     @commands.command()
     @commands.guild_only()
     async def maybe(self, ctx, list_index):
@@ -174,6 +182,7 @@ class Commands(commands.Cog):
     '''
     Command that displays all the lists for the server
     '''
+
     @commands.command()
     @commands.guild_only()
     async def lists(self, ctx):
@@ -189,7 +198,7 @@ class Commands(commands.Cog):
         lists_text = ''
 
         for i in range(len(server_lists)):
-            lists_text += f'**{i+1}.** {server_lists[i]}\n'
+            lists_text += f'**{i + 1}.** {server_lists[i]}\n'
 
         embed = discord.Embed(
             title='Lists',
@@ -197,6 +206,64 @@ class Commands(commands.Cog):
         )
 
         embed.add_field(name='\u200b', value=lists_text)
+
+        await ctx.send(embed=embed)
+
+    '''
+    Command that shows all the members in the yes, no, and maybe categories of the specified list
+    '''
+
+    @commands.command()
+    @commands.guild_only()
+    async def list(self, ctx, i):
+        guild_key = str(ctx.guild.id)
+        index = int(i) - 1
+
+        with open('SERVER_SETTINGS.json', 'r') as file:
+            server_settings = json.load(file)
+
+        member_list = server_settings[guild_key][0]
+        list = server_settings[guild_key][1][index]
+        list_name = list[0]
+        yes_list, no_list, maybe_list = list[2], list[3], list[4]
+        yes_names, no_names, maybe_names = '>>> \u200b', '>>> \u200b', '>>> \u200b'
+        print('asdsadad')
+        print(yes_names)
+        print(no_names)
+        print(maybe_names)
+        yes_list = [member_list[str(name)] if str(name) in member_list
+                    else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
+                    else ctx.guild.get_member(name).display_name
+                    for name in yes_list]
+        no_list = [member_list[str(name)] if str(name) in member_list
+                   else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
+                   else ctx.guild.get_member(name).display_name
+                   for name in no_list]
+        maybe_list = [member_list[str(name)] if str(name) in member_list
+                      else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
+                      else ctx.guild.get_member(name).display_name
+                      for name in maybe_list]
+
+        yes_names, no_names, maybe_names = (yes_names + ',\n'.join(yes_list)), (no_names + ',\n'.join(no_list)), (maybe_names + ',\n'.join(maybe_list))
+
+        if len(yes_names) == 0:
+            yes_names = '\u200b'
+        if len(no_names) == 0:
+            no_names = '\u200b'
+        if len(maybe_names) == 0:
+            maybe_names = '\u200b'
+
+        embed = discord.Embed(
+            title=list_name,
+            color=0x8f24f9
+        )
+
+        print(yes_names)
+        print(no_names)
+        print(maybe_names)
+        embed.add_field(name='**__Yes__     **', value=yes_names)
+        embed.add_field(name='**__No__     **', value=no_names)
+        embed.add_field(name='**__Maybe__     **', value=maybe_names)
 
         await ctx.send(embed=embed)
 
