@@ -1,7 +1,7 @@
 import json
 import discord
 from discord.ext import commands
-
+from JsonHandler import read, save
 
 class Events(commands.Cog):
 
@@ -10,8 +10,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        with open('SERVER_SETTINGS.json', 'r') as file:
-            server_data = json.load(file)
+        server_data = read()
 
         # the dictionary in index 0 will save a key:value pair consisting of member id's and member nicknames
         # the list in index 1 will store the lists for the server
@@ -20,18 +19,15 @@ class Events(commands.Cog):
             []
         ]
 
-        with open('SERVER_SETTINGS.json', 'w') as file:
-            json.dump(server_data, file)
+        save(server_data)
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
-        with open('SERVER_SETTINGS.json', 'r') as file:
-            server_data = json.load(file)
+        server_data = read()
 
         del server_data[str(guild.id)]
 
-        with open('SERVER_SETTINGS.json', 'w') as file:
-            json.dump(server_data, file)
+        save(server_data)
 
 
 def setup(bot):
