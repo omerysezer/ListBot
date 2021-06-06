@@ -1,8 +1,8 @@
-import itertools
+import sys
 from typing import Optional
 import discord
 from discord.ext import commands
-import json
+from JsonHandler import save, read
 
 
 class Commands(commands.Cog):
@@ -28,13 +28,11 @@ class Commands(commands.Cog):
 
         guild_key = str(ctx.guild.id)
         member_key = str(member.id)
-        with open('SERVER_SETTINGS.json', 'r') as file:
-            server_data = json.load(file)
+        server_data = read()
 
         server_data[guild_key][0][member_key] = name
 
-        with open('SERVER_SETTINGS.json', 'w') as file:
-            json.dump(server_data, file)
+        save(server_data)
 
         await ctx.channel.send(f'The name for {member.mention} has been set to **\'{name}\'**')
 
@@ -47,8 +45,7 @@ class Commands(commands.Cog):
     async def name(self, ctx):
         author_id = str(ctx.author.id)
 
-        with open('SERVER_SETTINGS.json', 'r') as file:
-            server_data = json.load(file)
+        server_data = read()
 
         server_names_list = server_data[str(ctx.guild.id)][0]
         if author_id in server_names_list:
@@ -69,14 +66,12 @@ class Commands(commands.Cog):
         guild_id = str(ctx.guild.id)
         role_id = (await ctx.guild.create_role(name=list_name, mentionable=True)).id
 
-        with open('SERVER_SETTINGS.json', 'r') as file:
-            server_settings = json.load(file)
+        server_settings = read()
 
         yes_list, no_list, maybe_list = [], [], []
         server_settings[guild_id][1].append([list_name, role_id, yes_list, no_list, maybe_list])
 
-        with open('SERVER_SETTINGS.json', 'w') as file:
-            json.dump(server_settings, file)
+        save(server_settings)
 
         await ctx.channel.send(f'Created a new list: \'{list_name}\'')
 
@@ -90,8 +85,7 @@ class Commands(commands.Cog):
         guild_key = str(ctx.guild.id)
         index = int(list_index) - 1
 
-        with open('SERVER_SETTINGS.json', 'r') as file:
-            server_settings = json.load(file)
+        server_settings = read()
 
         list = server_settings[guild_key][1][index]
         list_role = discord.utils.get(ctx.guild.roles, id=list[1])
@@ -110,8 +104,7 @@ class Commands(commands.Cog):
             list[2].append(ctx.author.id)
             await ctx.author.add_roles(list_role)
 
-        with open('SERVER_SETTINGS.json', 'w') as file:
-            json.dump(server_settings, file)
+        save(server_settings)
 
     '''
     Command that allows users to add themselves to the no category of a list
@@ -123,8 +116,7 @@ class Commands(commands.Cog):
         guild_key = str(ctx.guild.id)
         index = int(list_index) - 1
 
-        with open('SERVER_SETTINGS.json', 'r') as file:
-            server_settings = json.load(file)
+        server_settings = read()
 
         list = server_settings[guild_key][1][index]
         list_role = discord.utils.get(ctx.guild.roles, id=list[1])
@@ -143,8 +135,7 @@ class Commands(commands.Cog):
             list[3].append(ctx.author.id)
             await ctx.author.remove_roles(list_role)
 
-        with open('SERVER_SETTINGS.json', 'w') as file:
-            json.dump(server_settings, file)
+        save(server_settings)
 
     '''
     Command that allows users to add themselves to the maybe category of a list
@@ -156,8 +147,7 @@ class Commands(commands.Cog):
         guild_key = str(ctx.guild.id)
         index = int(list_index) - 1
 
-        with open('SERVER_SETTINGS.json', 'r') as file:
-            server_settings = json.load(file)
+        server_settings = read()
 
         list = server_settings[guild_key][1][index]
         list_role = discord.utils.get(ctx.guild.roles, id=list[1])
@@ -176,8 +166,7 @@ class Commands(commands.Cog):
             list[4].append(ctx.author.id)
             await ctx.author.remove_roles(list_role)
 
-        with open('SERVER_SETTINGS.json', 'w') as file:
-            json.dump(server_settings, file)
+        save(server_settings)
 
     '''
     Command that displays all the lists for the server
@@ -188,8 +177,7 @@ class Commands(commands.Cog):
     async def lists(self, ctx):
         guild_key = str(ctx.guild.id)
 
-        with open('SERVER_SETTINGS.json', 'r') as file:
-            server_settings = json.load(file)
+        server_settings = read()
 
         server_lists = server_settings[guild_key][1]
 
@@ -219,8 +207,7 @@ class Commands(commands.Cog):
         guild_key = str(ctx.guild.id)
         index = int(i) - 1
 
-        with open('SERVER_SETTINGS.json', 'r') as file:
-            server_settings = json.load(file)
+        server_settings = read()
 
         member_list = server_settings[guild_key][0]
         list = server_settings[guild_key][1][index]
@@ -233,15 +220,15 @@ class Commands(commands.Cog):
         print(maybe_names)
         yes_list = [member_list[str(name)] if str(name) in member_list
                     else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
-                    else ctx.guild.get_member(name).display_name
+        else ctx.guild.get_member(name).display_name
                     for name in yes_list]
         no_list = [member_list[str(name)] if str(name) in member_list
                    else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
-                   else ctx.guild.get_member(name).display_name
+        else ctx.guild.get_member(name).display_name
                    for name in no_list]
         maybe_list = [member_list[str(name)] if str(name) in member_list
                       else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
-                      else ctx.guild.get_member(name).display_name
+        else ctx.guild.get_member(name).display_name
                       for name in maybe_list]
 
         yes_names, no_names, maybe_names = (yes_names + ',\n'.join(yes_list)), (no_names + ',\n'.join(no_list)), (maybe_names + ',\n'.join(maybe_list))
