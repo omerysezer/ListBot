@@ -62,18 +62,21 @@ class Commands(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def create(self, ctx, *, name):
-        list_name = name
+        role_name = name
         guild_id = str(ctx.guild.id)
-        role_id = (await ctx.guild.create_role(name=list_name, mentionable=True)).id
+        if len(role_name) >= 100:
+            role_name = role_name[0:96] + '...'
+
+        role_id = (await ctx.guild.create_role(name=role_name, mentionable=True)).id
 
         server_settings = read()
 
         yes_list, no_list, maybe_list = [], [], []
-        server_settings[guild_id][1].append([list_name, role_id, yes_list, no_list, maybe_list])
+        server_settings[guild_id][1].append([name, role_id, yes_list, no_list, maybe_list])
 
         save(server_settings)
 
-        await ctx.channel.send(f'Created a new list: \'{list_name}\'')
+        await ctx.channel.send(f'Created a new list: \'{name}\'')
 
     '''
     Command that allows the user to add themselves to the yes category of a list
@@ -86,6 +89,10 @@ class Commands(commands.Cog):
         index = int(list_index) - 1
 
         server_settings = read()
+
+        if index < 0 or index >= len(server_settings[guild_key][1]):
+            await ctx.send('That list doesn\'t exist.\nUse =lists to view a list of all lists in this server')
+            return
 
         list = server_settings[guild_key][1][index]
         list_role = discord.utils.get(ctx.guild.roles, id=list[1])
@@ -118,6 +125,10 @@ class Commands(commands.Cog):
 
         server_settings = read()
 
+        if index < 0 or index >= len(server_settings[guild_key][1]):
+            await ctx.send('That list doesn\'t exist.\nUse =lists to view a list of all lists in this server')
+            return
+
         list = server_settings[guild_key][1][index]
         list_role = discord.utils.get(ctx.guild.roles, id=list[1])
 
@@ -149,6 +160,9 @@ class Commands(commands.Cog):
 
         server_settings = read()
 
+        if index < 0 or index >= len(server_settings[guild_key][1]):
+            await ctx.send('That list doesn\'t exist.\nUse =lists to view a list of all lists in this server')
+            return
         list = server_settings[guild_key][1][index]
         list_role = discord.utils.get(ctx.guild.roles, id=list[1])
 
@@ -213,6 +227,10 @@ class Commands(commands.Cog):
         index = int(i) - 1
 
         server_settings = read()
+
+        if index < 0 or index >= len(server_settings[guild_key][1]):
+            await ctx.send('That list doesn\'t exist.\nUse =lists to view a list of all lists in this server')
+            return
 
         member_list = server_settings[guild_key][0]
         list = server_settings[guild_key][1][index]
