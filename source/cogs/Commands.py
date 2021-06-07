@@ -188,12 +188,17 @@ class Commands(commands.Cog):
         for i in range(len(server_lists)):
             lists_text += f'**{i + 1}.** {server_lists[i]}\n'
 
+        if not lists_text:
+            lists_text = 'There are no lists in this server'
+
         embed = discord.Embed(
             title='Lists',
+            description=lists_text,
             color=0x8f24f9
         )
 
-        embed.add_field(name='\u200b', value=lists_text)
+        #embed.add_field(name='\u200b', value=lists_text)
+        embed.set_footer(text='\n\n=create [list name] to create a new list\n=list [list number] to view a list')
 
         await ctx.send(embed=embed)
 
@@ -213,23 +218,25 @@ class Commands(commands.Cog):
         list = server_settings[guild_key][1][index]
         list_name = list[0]
         yes_list, no_list, maybe_list = list[2], list[3], list[4]
+
         yes_names, no_names, maybe_names = '>>> \u200b', '>>> \u200b', '>>> \u200b'
-        print('asdsadad')
-        print(yes_names)
-        print(no_names)
-        print(maybe_names)
+
         yes_list = [member_list[str(name)] if str(name) in member_list
                     else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
-        else ctx.guild.get_member(name).display_name
+                    else ctx.guild.get_member(name).display_name
                     for name in yes_list]
         no_list = [member_list[str(name)] if str(name) in member_list
                    else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
-        else ctx.guild.get_member(name).display_name
+                   else ctx.guild.get_member(name).display_name
                    for name in no_list]
         maybe_list = [member_list[str(name)] if str(name) in member_list
                       else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
-        else ctx.guild.get_member(name).display_name
+                      else ctx.guild.get_member(name).display_name
                       for name in maybe_list]
+
+        yes_list = [name[0:16]+'...' if len(name) >=17 else name for name in yes_list]
+        no_list = [name[0:16]+'...' if len(name) >=17 else name for name in no_list]
+        maybe_list = [name[0:16]+'...' if len(name) >=17 else name for name in maybe_list]
 
         yes_names, no_names, maybe_names = (yes_names + ',\n'.join(yes_list)), (no_names + ',\n'.join(no_list)), (maybe_names + ',\n'.join(maybe_list))
 
@@ -245,13 +252,10 @@ class Commands(commands.Cog):
             color=0x8f24f9
         )
 
-        print(yes_names)
-        print(no_names)
-        print(maybe_names)
-        embed.add_field(name='**__Yes__     **', value=yes_names)
-        embed.add_field(name='**__No__     **', value=no_names)
-        embed.add_field(name='**__Maybe__     **', value=maybe_names)
-
+        embed.add_field(name=':smiley: **__Yes__                                        **', value=yes_names)
+        embed.add_field(name=':rage: **__No__                                        **', value=no_names)
+        embed.add_field(name=':thinking: **__Maybe__**', value=maybe_names)
+        embed.set_footer(text=f'\n=yes {i} to add yourself to the yes list\n=no {i} to add yourself to the no list\n=maybe {i} to add yourself to the maybe list')
         await ctx.send(embed=embed)
 
 
