@@ -79,9 +79,39 @@ class Commands(commands.Cog):
         await ctx.channel.send(f'Created a new list: \'{name}\'')
 
     '''
+    Command that lets users delete a list
+    '''
+    @commands.command()
+    @commands.guild_only()
+    async def delete(self, ctx, i):
+        index = int(i) - 1
+        guild_key = str(ctx.guild.id)
+
+        server_settings = read()
+        lists = server_settings[guild_key][1]
+
+        if index < 0 or index >= len(lists):
+            await ctx.send('That list doesn\'t exist. Use =lists to see a list of all lists in this server')
+            return
+
+        list = lists[index]
+        name = list[0]
+        role_id = list[1]
+
+        del lists[index]
+
+        role = ctx.guild.get_role(role_id)
+        if role:
+            await role.delete()
+
+        save(server_settings)
+
+        await ctx.send(f'Deleted the list {name}.')
+
+
+    '''
     Command that allows the user to add themselves to the yes category of a list
     '''
-
     @commands.command()
     @commands.guild_only()
     async def yes(self, ctx, list_index):
