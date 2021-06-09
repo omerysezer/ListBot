@@ -327,11 +327,10 @@ class Commands(commands.Cog):
 
         embed.add_field(name='**=maybe [list number]**', value='Adds you to the *maybe* section of the list', inline=False)
 
-        embed.add_field(name='**=setname [ping a user] [name]**', value='`If no user is included` set your own nickname\n'
-                                                                                                       '`If a user is included` set that user\'s nickname **[admins only]**'
-                                                                                                        , inline=False)
-
         embed.add_field(name='=name', value='Shows what your nickname is', inline=False)
+
+        embed.add_field(name='**=setname [ping a user] [name]**', value='`If no user is included` set your own nickname\n'
+                                                                        '`If a user is included` set that user\'s nickname **[admins only]**', inline=False)
         await ctx.send(embed=embed)
 
 def setup(bot):
