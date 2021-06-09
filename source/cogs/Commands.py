@@ -58,7 +58,6 @@ class Commands(commands.Cog):
     '''
     Command that allows the user to create a list
     '''
-
     @commands.command()
     @commands.guild_only()
     async def create(self, ctx, *, name):
@@ -146,7 +145,6 @@ class Commands(commands.Cog):
     '''
     Command that allows users to add themselves to the no category of a list
     '''
-
     @commands.command()
     @commands.guild_only()
     async def no(self, ctx, list_index):
@@ -181,7 +179,6 @@ class Commands(commands.Cog):
     '''
     Command that allows users to add themselves to the maybe category of a list
     '''
-
     @commands.command()
     @commands.guild_only()
     async def maybe(self, ctx, list_index):
@@ -215,7 +212,6 @@ class Commands(commands.Cog):
     '''
     Command that displays all the lists for the server
     '''
-
     @commands.command()
     @commands.guild_only()
     async def lists(self, ctx):
@@ -249,7 +245,6 @@ class Commands(commands.Cog):
     '''
     Command that shows all the members in the yes, no, and maybe categories of the specified list
     '''
-
     @commands.command()
     @commands.guild_only()
     async def list(self, ctx, i):
@@ -306,6 +301,38 @@ class Commands(commands.Cog):
         embed.set_footer(text=f'\n=yes {i} to add yourself to the yes list\n=no {i} to add yourself to the no list\n=maybe {i} to add yourself to the maybe list')
         await ctx.send(embed=embed)
 
+    '''
+    Help Command
+    '''
+    @commands.command()
+    @commands.guild_only()
+    async def help(self, ctx):
+        embed = discord.Embed(
+            title='Help',
+            description='Help Command',
+            color=0x8f24f9
+        )
+
+        embed.add_field(name='**=create [list name]**', value='Creates a new list', inline=False)
+
+        embed.add_field(name='**=delete [list number]**', value='Deletes the list', inline=False)
+
+        embed.add_field(name='**=lists**', value='Shows all the lists', inline=False)
+
+        embed.add_field(name='**=list [list number]**', value='Shows the list\'s details', inline=False)
+
+        embed.add_field(name='**=yes [list number]**', value='Adds you to the *yes* section of the list', inline=False)
+
+        embed.add_field(name='**=no [list number]**', value='Adds you to the *no* section of the list', inline=False)
+
+        embed.add_field(name='**=maybe [list number]**', value='Adds you to the *maybe* section of the list', inline=False)
+
+        embed.add_field(name='**=setname [ping a user] [name]**', value='`If no user is included` set your own nickname\n'
+                                                                                                       '`If a user is included` set that user\'s nickname **[admins only]**'
+                                                                                                        , inline=False)
+
+        embed.add_field(name='=name', value='Shows what your nickname is', inline=False)
+        await ctx.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Commands(bot))

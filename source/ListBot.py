@@ -6,6 +6,7 @@ import os
 intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix='=', intents=intents)
+bot.remove_command('help')
 
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
