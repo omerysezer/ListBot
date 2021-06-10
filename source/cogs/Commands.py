@@ -1,3 +1,4 @@
+import asyncio
 import sys
 from typing import Optional
 import discord
@@ -107,6 +108,41 @@ class Commands(commands.Cog):
 
         await ctx.send(f'Deleted the list {name}.')
 
+    '''
+    Command that lets users rename a specified list
+    '''
+    @commands.command()
+    @commands.guild_only()
+    async def rename(self, ctx, i):
+        index = int(i) - 1
+        guild_key = str(ctx.guild.id)
+
+        server_settings = read()
+        lists = server_settings[guild_key][1]
+
+        if index < 0 or index >= len(lists):
+            await ctx.send('That list doesn\'t exist. Use =lists to see a list of all lists in this server')
+            return
+
+        list = lists[index]
+        list_name = list[0]
+        list_role_id = list[1]
+
+        def check(msg):
+            return msg.author == ctx.author and msg.channel == ctx.channel
+
+        await ctx.send(f'What do you want to rename `\'{list_name}\'` to? (Please respond within 1 minute)')
+        try:
+            message = await self.bot.wait_for('message', check=check, timeout=60)
+        except asyncio.TimeoutError:
+            await ctx.send('Sorry the timer ran out and I stopped listening.')
+            return
+
+        new_name = message.content
+        list[0] = new_name
+        save(server_settings)
+
+        await ctx.send(f'Changed the list name from `{list_name}` to `{new_name}`')
 
     '''
     Command that allows the user to add themselves to the yes category of a list
@@ -316,6 +352,8 @@ class Commands(commands.Cog):
         embed.add_field(name='**=create [list name]**', value='Creates a new list', inline=False)
 
         embed.add_field(name='**=delete [list number]**', value='Deletes the list', inline=False)
+
+        embed.add_field(name='=**rename [list number]**', value='Renames a list', inline=False)
 
         embed.add_field(name='**=lists**', value='Shows all the lists', inline=False)
 
