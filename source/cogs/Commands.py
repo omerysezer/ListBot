@@ -1,5 +1,4 @@
 import asyncio
-import sys
 from typing import Optional
 import discord
 from discord.ext import commands
@@ -48,9 +47,9 @@ class Commands(commands.Cog):
 
         server_data = read()
 
-        server_names_list = server_data[str(ctx.guild.id)][0]
-        if author_id in server_names_list:
-            name = server_names_list[author_id]
+        names_dict = server_data[str(ctx.guild.id)][0]
+        if author_id in names_dict:
+            name = names_dict[author_id]
         else:
             name = ctx.author.nick
 
@@ -59,74 +58,78 @@ class Commands(commands.Cog):
     '''
     Command that allows the user to create a list
     '''
+
     @commands.command()
     @commands.guild_only()
     async def create(self, ctx, *, name):
-        role_name = name
+        role_name = ''
         guild_id = str(ctx.guild.id)
-        if len(role_name) >= 100:
-            role_name = role_name[0:96] + '...'
+
+        if len(name) >= 100:
+            role_name = f'{name[0:96]}...'
 
         role_id = (await ctx.guild.create_role(name=role_name, mentionable=True)).id
 
-        server_settings = read()
+        server_data = read()
 
         yes_list, no_list, maybe_list = [], [], []
-        server_settings[guild_id][1].append([name, role_id, yes_list, no_list, maybe_list])
+        server_data[guild_id][1].append([name, role_id, yes_list, no_list, maybe_list])
 
-        save(server_settings)
+        save(server_data)
 
         await ctx.channel.send(f'Created a new list: \'{name}\'')
 
     '''
     Command that lets users delete a list
     '''
+
     @commands.command()
     @commands.guild_only()
-    async def delete(self, ctx, i):
-        index = int(i) - 1
+    async def delete(self, ctx, list_number):
+        index = int(list_number) - 1
         guild_key = str(ctx.guild.id)
 
-        server_settings = read()
-        lists = server_settings[guild_key][1]
+        server_data = read()
+        guild_lists = server_data[guild_key][1]
 
-        if index < 0 or index >= len(lists):
+        if index < 0 or index >= len(guild_lists):
             await ctx.send('That list doesn\'t exist. Use =lists to see a list of all lists in this server')
             return
 
-        list = lists[index]
-        name = list[0]
-        role_id = list[1]
+        li = guild_lists[index]
+        name = li[0]
+        role_id = li[1]
 
-        del lists[index]
+        del guild_lists[index]
 
         role = ctx.guild.get_role(role_id)
         if role:
             await role.delete()
 
-        save(server_settings)
+        save(server_data)
 
         await ctx.send(f'Deleted the list {name}.')
 
     '''
     Command that lets users rename a specified list
     '''
+
     @commands.command()
     @commands.guild_only()
-    async def rename(self, ctx, i):
-        index = int(i) - 1
+    async def rename(self, ctx, list_number):
+        index = int(list_number) - 1
         guild_key = str(ctx.guild.id)
 
-        server_settings = read()
-        lists = server_settings[guild_key][1]
+        server_data = read()
+        guild_lists = server_data[guild_key][1]
 
-        if index < 0 or index >= len(lists):
+        if index < 0 or index >= len(guild_lists):
             await ctx.send('That list doesn\'t exist. Use =lists to see a list of all lists in this server')
             return
 
-        list = lists[index]
-        list_name = list[0]
-        list_role_id = list[1]
+        li = guild_lists[index]
+        list_name = li[0]
+        list_role_id = li[1]
 
         def check(msg):
             return msg.author == ctx.author and msg.channel == ctx.channel
@@ -139,125 +142,129 @@ class Commands(commands.Cog):
             return
 
         new_name = message.content
-        list[0] = new_name
-        save(server_settings)
+        li[0] = new_name
+        save(server_data)
 
         await ctx.send(f'Changed the list name from `{list_name}` to `{new_name}`')
 
     '''
     Command that allows the user to add themselves to the yes category of a list
     '''
+
     @commands.command()
     @commands.guild_only()
-    async def yes(self, ctx, list_index):
+    async def yes(self, ctx, list_number):
         guild_key = str(ctx.guild.id)
-        index = int(list_index) - 1
+        index = int(list_number) - 1
 
-        server_settings = read()
+        server_data = read()
 
-        if index < 0 or index >= len(server_settings[guild_key][1]):
+        if index < 0 or index >= len(server_data[guild_key][1]):
             await ctx.send('That list doesn\'t exist.\nUse =lists to view a list of all lists in this server')
             return
 
-        list = server_settings[guild_key][1][index]
-        list_role = discord.utils.get(ctx.guild.roles, id=list[1])
+        li = server_data[guild_key][1][index]
+        list_role = discord.utils.get(ctx.guild.roles, id=li[1])
 
-        if ctx.author.id in list[2]:
+        if ctx.author.id in li[2]:
             return
-        if ctx.author.id in list[3]:
-            list[3].remove(ctx.author.id)
-            list[2].append(ctx.author.id)
+        if ctx.author.id in li[3]:
+            li[3].remove(ctx.author.id)
+            li[2].append(ctx.author.id)
             await ctx.author.add_roles(list_role)
-        if ctx.author.id in list[4]:
-            list[4].remove(ctx.author.id)
-            list[2].append(ctx.author.id)
+        if ctx.author.id in li[4]:
+            li[4].remove(ctx.author.id)
+            li[2].append(ctx.author.id)
             await ctx.author.add_roles(list_role)
-        if ctx.author.id not in list[2]:
-            list[2].append(ctx.author.id)
+        if ctx.author.id not in li[2]:
+            li[2].append(ctx.author.id)
             await ctx.author.add_roles(list_role)
 
-        save(server_settings)
+        save(server_data)
 
     '''
     Command that allows users to add themselves to the no category of a list
     '''
+
     @commands.command()
     @commands.guild_only()
     async def no(self, ctx, list_index):
         guild_key = str(ctx.guild.id)
         index = int(list_index) - 1
 
-        server_settings = read()
+        server_data = read()
 
-        if index < 0 or index >= len(server_settings[guild_key][1]):
+        if index < 0 or index >= len(server_data[guild_key][1]):
             await ctx.send('That list doesn\'t exist.\nUse =lists to view a list of all lists in this server')
             return
 
-        list = server_settings[guild_key][1][index]
-        list_role = discord.utils.get(ctx.guild.roles, id=list[1])
+        li = server_data[guild_key][1][index]
+        list_role = discord.utils.get(ctx.guild.roles, id=li[1])
 
-        if ctx.author.id in list[3]:
+        if ctx.author.id in li[3]:
             return
-        if ctx.author.id in list[2]:
-            list[2].remove(ctx.author.id)
-            list[3].append(ctx.author.id)
+        if ctx.author.id in li[2]:
+            li[2].remove(ctx.author.id)
+            li[3].append(ctx.author.id)
             await ctx.author.remove_roles(list_role)
-        if ctx.author.id in list[4]:
-            list[4].remove(ctx.author.id)
-            list[3].append(ctx.author.id)
+        if ctx.author.id in li[4]:
+            li[4].remove(ctx.author.id)
+            li[3].append(ctx.author.id)
             await ctx.author.remove_roles(list_role)
-        if ctx.author.id not in list[3]:
-            list[3].append(ctx.author.id)
+        if ctx.author.id not in li[3]:
+            li[3].append(ctx.author.id)
             await ctx.author.remove_roles(list_role)
 
-        save(server_settings)
+        save(server_data)
 
     '''
     Command that allows users to add themselves to the maybe category of a list
     '''
+
     @commands.command()
     @commands.guild_only()
     async def maybe(self, ctx, list_index):
         guild_key = str(ctx.guild.id)
         index = int(list_index) - 1
 
-        server_settings = read()
+        server_data = read()
 
-        if index < 0 or index >= len(server_settings[guild_key][1]):
+        if index < 0 or index >= len(server_data[guild_key][1]):
             await ctx.send('That list doesn\'t exist.\nUse =lists to view a list of all lists in this server')
             return
-        list = server_settings[guild_key][1][index]
-        list_role = discord.utils.get(ctx.guild.roles, id=list[1])
+        li = server_data[guild_key][1][index]
+        list_role = discord.utils.get(ctx.guild.roles, id=li[1])
 
-        if ctx.author.id in list[4]:
+        if ctx.author.id in li[4]:
             return
-        if ctx.author.id in list[2]:
-            list[2].remove(ctx.author.id)
-            list[4].append(ctx.author.id)
+        if ctx.author.id in li[2]:
+            li[2].remove(ctx.author.id)
+            li[4].append(ctx.author.id)
             await ctx.author.remove_roles(list_role)
-        if ctx.author.id in list[3]:
-            list[3].remove(ctx.author.id)
-            list[4].append(ctx.author.id)
+        if ctx.author.id in li[3]:
+            li[3].remove(ctx.author.id)
+            li[4].append(ctx.author.id)
             await ctx.author.remove_roles(list_role)
-        if ctx.author.id not in list[4]:
-            list[4].append(ctx.author.id)
+        if ctx.author.id not in li[4]:
+            li[4].append(ctx.author.id)
             await ctx.author.remove_roles(list_role)
 
-        save(server_settings)
+        save(server_data)
 
     '''
     Command that displays all the lists for the server
     '''
+
     @commands.command()
     @commands.guild_only()
     async def lists(self, ctx):
         guild_key = str(ctx.guild.id)
 
-        server_settings = read()
+        server_data = read()
 
-        server_lists = server_settings[guild_key][1]
+        server_lists = server_data[guild_key][1]
 
-        server_lists = [list[0] for list in server_lists]
+        server_lists = [li[0] for li in server_lists]
 
         lists_text = ''
 
@@ -273,7 +280,6 @@ class Commands(commands.Cog):
             color=0x8f24f9
         )
 
-        #embed.add_field(name='\u200b', value=lists_text)
         embed.set_footer(text='\n\n=create [list name] to create a new list\n=list [list number] to view a list')
 
         await ctx.send(embed=embed)
@@ -281,41 +287,42 @@ class Commands(commands.Cog):
     '''
     Command that shows all the members in the yes, no, and maybe categories of the specified list
     '''
+
     @commands.command()
     @commands.guild_only()
     async def list(self, ctx, i):
         guild_key = str(ctx.guild.id)
         index = int(i) - 1
 
-        server_settings = read()
+        server_data = read()
 
-        if index < 0 or index >= len(server_settings[guild_key][1]):
+        if index < 0 or index >= len(server_data[guild_key][1]):
             await ctx.send('That list doesn\'t exist.\nUse =lists to view a list of all lists in this server')
             return
 
-        member_list = server_settings[guild_key][0]
-        list = server_settings[guild_key][1][index]
-        list_name = list[0]
-        yes_list, no_list, maybe_list = list[2], list[3], list[4]
+        member_list = server_data[guild_key][0]
+        li = server_data[guild_key][1][index]
+        list_name = li[0]
+        yes_list, no_list, maybe_list = li[2], li[3], li[4]
 
         yes_names, no_names, maybe_names = '>>> \u200b', '>>> \u200b', '>>> \u200b'
 
         yes_list = [member_list[str(name)] if str(name) in member_list
                     else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
-                    else ctx.guild.get_member(name).display_name
+        else ctx.guild.get_member(name).display_name
                     for name in yes_list]
         no_list = [member_list[str(name)] if str(name) in member_list
                    else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
-                   else ctx.guild.get_member(name).display_name
+        else ctx.guild.get_member(name).display_name
                    for name in no_list]
         maybe_list = [member_list[str(name)] if str(name) in member_list
                       else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
-                      else ctx.guild.get_member(name).display_name
+        else ctx.guild.get_member(name).display_name
                       for name in maybe_list]
 
-        yes_list = [name[0:16]+'...' if len(name) >=17 else name for name in yes_list]
-        no_list = [name[0:16]+'...' if len(name) >=17 else name for name in no_list]
-        maybe_list = [name[0:16]+'...' if len(name) >=17 else name for name in maybe_list]
+        yes_list = [name[0:16] + '...' if len(name) >= 17 else name for name in yes_list]
+        no_list = [name[0:16] + '...' if len(name) >= 17 else name for name in no_list]
+        maybe_list = [name[0:16] + '...' if len(name) >= 17 else name for name in maybe_list]
 
         yes_names, no_names, maybe_names = (yes_names + ',\n'.join(yes_list)), (no_names + ',\n'.join(no_list)), (maybe_names + ',\n'.join(maybe_list))
 
@@ -340,6 +347,7 @@ class Commands(commands.Cog):
     '''
     Help Command
     '''
+
     @commands.command()
     @commands.guild_only()
     async def help(self, ctx):
@@ -370,6 +378,7 @@ class Commands(commands.Cog):
         embed.add_field(name='**=setname [ping a user] [name]**', value='`If no user is included` set your own nickname\n'
                                                                         '`If a user is included` set that user\'s nickname **[admins only]**', inline=False)
         await ctx.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Commands(bot))
