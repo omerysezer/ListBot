@@ -53,7 +53,7 @@ class Commands(commands.Cog):
         else:
             name = ctx.author.nick
 
-        await ctx.channel.send(f'Your name is {name}')
+        await ctx.channel.send(f'Your name is **\'{name}\'**')
 
     '''
     Command that allows the user to create a list
@@ -303,35 +303,23 @@ class Commands(commands.Cog):
         member_list = server_data[guild_key][0]
         li = server_data[guild_key][1][index]
         list_name = li[0]
-        yes_list, no_list, maybe_list = li[2], li[3], li[4]
-
+        yes_members_lists, no_members_lists, maybe_members_list = li[2], li[3], li[4]
         yes_names, no_names, maybe_names = '>>> \u200b', '>>> \u200b', '>>> \u200b'
 
-        yes_list = [member_list[str(name)] if str(name) in member_list
-                    else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
-        else ctx.guild.get_member(name).display_name
-                    for name in yes_list]
-        no_list = [member_list[str(name)] if str(name) in member_list
-                   else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
-        else ctx.guild.get_member(name).display_name
-                   for name in no_list]
-        maybe_list = [member_list[str(name)] if str(name) in member_list
-                      else ctx.guild.get_member(name).nick if ctx.guild.get_member(name).nick
-        else ctx.guild.get_member(name).display_name
-                      for name in maybe_list]
+        def swap_ids_for_names(member_id: int):
+            def get_name(x: int):
+                return member_list.get(str(x)) or ctx.guild.get_member(x).nick or ctx.guild.get_member(x).display_name
 
-        yes_list = [name[0:16] + '...' if len(name) >= 17 else name for name in yes_list]
-        no_list = [name[0:16] + '...' if len(name) >= 17 else name for name in no_list]
-        maybe_list = [name[0:16] + '...' if len(name) >= 17 else name for name in maybe_list]
+            name = get_name(member_id)
+            if len(name) >= 17:
+                name = f'{name[0:16]}...'
+            return name
 
-        yes_names, no_names, maybe_names = (yes_names + ',\n'.join(yes_list)), (no_names + ',\n'.join(no_list)), (maybe_names + ',\n'.join(maybe_list))
+        yes_members_lists = list(map(swap_ids_for_names, yes_members_lists))
+        no_members_lists = list(map(swap_ids_for_names, no_members_lists))
+        maybe_members_list = list(map(swap_ids_for_names, maybe_members_list))
 
-        if len(yes_names) == 0:
-            yes_names = '\u200b'
-        if len(no_names) == 0:
-            no_names = '\u200b'
-        if len(maybe_names) == 0:
-            maybe_names = '\u200b'
+        yes_names, no_names, maybe_names = (yes_names + '\n'.join(yes_members_lists)), (no_names + '\n'.join(no_members_lists)), (maybe_names + '\n'.join(maybe_members_list))
 
         embed = discord.Embed(
             title=list_name,
