@@ -29,6 +29,27 @@ class Events(commands.Cog):
 
         save(server_data)
 
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        guild_key = str(member.guild.id)
+        server_data = read()
+        member_list = server_data[guild_key][0]
+        server_lists = server_data[guild_key][1]
+
+        member_list.pop(str(member.id), None)
+
+        for plan in server_lists:
+            yes, no, maybe = plan[2], plan[3], plan[4]
+            if member.id in yes:
+                yes.remove(member.id)
+            if member.id in no:
+                no.remove(member.id)
+            if member.id in maybe:
+                maybe.remove(member.id)
+
+        save(server_data)
+
+
 
 def setup(bot):
     bot.add_cog(Events(bot))
