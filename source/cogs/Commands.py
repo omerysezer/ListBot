@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 from JsonHandler import save, read
 
-
+embed_color = 0x8f24f9
 class Commands(commands.Cog):
 
     def __init__(self, bot):
@@ -277,7 +277,7 @@ class Commands(commands.Cog):
         embed = discord.Embed(
             title='Lists',
             description=lists_text,
-            color=0x8f24f9
+            color=embed_color
         )
 
         embed.set_footer(text='\n\n=create [list name] to create a new list\n=list [list number] to view a list')
@@ -323,7 +323,7 @@ class Commands(commands.Cog):
 
         embed = discord.Embed(
             title=list_name,
-            color=0x8f24f9
+            color=embed_color
         )
 
         embed.add_field(name=':smiley: **__Yes__                                        **', value=yes_names)
@@ -342,7 +342,7 @@ class Commands(commands.Cog):
         embed = discord.Embed(
             title='Help',
             description='Help Command',
-            color=0x8f24f9
+            color=embed_color
         )
 
         embed.add_field(name='**=create [list name]**', value='Creates a new list', inline=False)
