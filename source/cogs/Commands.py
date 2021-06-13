@@ -5,6 +5,8 @@ from discord.ext import commands
 from JsonHandler import save, read
 
 embed_color = 0x8f24f9
+
+
 class Commands(commands.Cog):
 
     def __init__(self, bot):
@@ -34,7 +36,11 @@ class Commands(commands.Cog):
 
         save(server_data)
 
-        await ctx.channel.send(f'The name for {member.mention} has been set to **\'{name}\'**')
+        if ctx.author is not member:
+            await ctx.channel.send(f'The name for {member.mention} has been set to **\'{name}\'**')
+            return
+
+        await ctx.channel.send(f'Your name has been set to **\'{name}\'**')
 
     '''
     command that allows the user to see what their current nickname is
