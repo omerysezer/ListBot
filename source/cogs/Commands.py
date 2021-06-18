@@ -68,7 +68,7 @@ class Commands(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def create(self, ctx, *, name):
-        role_name = ''
+        role_name = name
         guild_id = str(ctx.guild.id)
 
         if len(name) >= 100:
@@ -148,6 +148,8 @@ class Commands(commands.Cog):
             return
 
         new_name = message.content
+        role = discord.utils.get(ctx.guild.roles, id=list_role_id)
+        await role.edit(name=new_name)
         li[0] = new_name
         save(server_data)
 
@@ -355,7 +357,7 @@ class Commands(commands.Cog):
 
         embed.add_field(name='**=delete [list number]**', value='Deletes the list', inline=False)
 
-        embed.add_field(name='=**rename [list number]**', value='Renames a list', inline=False)
+        embed.add_field(name='**=rename [list number]**', value='Renames a list', inline=False)
 
         embed.add_field(name='**=lists**', value='Shows all the lists', inline=False)
 
@@ -367,7 +369,7 @@ class Commands(commands.Cog):
 
         embed.add_field(name='**=maybe [list number]**', value='Adds you to the *maybe* section of the list', inline=False)
 
-        embed.add_field(name='=name', value='Shows what your nickname is', inline=False)
+        embed.add_field(name='**=name**', value='Shows what your nickname is', inline=False)
 
         embed.add_field(name='**=setname [ping a user] [name]**', value='`If no user is included` set your own nickname\n'
                                                                         '`If a user is included` set that user\'s nickname **[admins only]**', inline=False)

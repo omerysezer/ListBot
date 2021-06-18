@@ -54,6 +54,8 @@ class Events(commands.Cog):
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.ArgumentParsingError):
             await ctx.send("Please don't put quotes `(\")` in your name, it hurts my robot head.")
+            return
+        raise error
 
 
 def setup(bot):
