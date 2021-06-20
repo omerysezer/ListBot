@@ -19,6 +19,12 @@ class Commands(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def setname(self, ctx, member: Optional[discord.Member] = None, *, name):
+        new_name = ''.join(char for char in name if char.isalnum() or char == ' ')
+
+        if not new_name:
+            await ctx.send('My robotic brain couldn\'t handle that name. Try a different name.')
+            return
+
         admin_req = False
         if member:
             admin_req = True
@@ -32,15 +38,15 @@ class Commands(commands.Cog):
         member_key = str(member.id)
         server_data = read()
 
-        server_data[guild_key][0][member_key] = name
+        server_data[guild_key][0][member_key] = new_name
 
         save(server_data)
 
         if ctx.author is not member:
-            await ctx.channel.send(f'The name for {member.mention} has been set to **\'{name}\'**')
+            await ctx.channel.send(f'The name for {member.mention} has been set to **\'{new_name}\'**')
             return
 
-        await ctx.channel.send(f'Your name has been set to **\'{name}\'**')
+        await ctx.channel.send(f'Your name has been set to **\'{new_name}\'**')
 
     '''
     command that allows the user to see what their current nickname is
@@ -67,13 +73,19 @@ class Commands(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def create(self, ctx, *, name):
-        role_name = name
+    async def create(self, ctx, *, list_name):
+        name = ''.join(char for char in list_name if char.isalnum() or char == ' ')
+
+        if not name:
+            await ctx.send('My robotic brain couldn\'t handle that name. Try a different name.')
+            return
+
         guild_id = str(ctx.guild.id)
 
         if len(name) >= 100:
-            role_name = f'{name[0:96]}...'
+            name = f'{name[0:96]}...'
 
+        role_name = name
         role_id = (await ctx.guild.create_role(name=role_name, mentionable=True)).id
 
         server_data = read()
@@ -148,6 +160,16 @@ class Commands(commands.Cog):
             return
 
         new_name = message.content
+
+        if len(new_name) >= 100:
+            new_name = f'{new_name[0:96]}...'
+
+        new_name = ''.join(char for char in new_name if char.isalnum() or char == ' ')
+
+        if not new_name:
+            await ctx.send('My robotic brain couldn\'t handle that name. Try a different name.')
+            return
+
         role = discord.utils.get(ctx.guild.roles, id=list_role_id)
         await role.edit(name=new_name)
         li[0] = new_name
@@ -172,9 +194,11 @@ class Commands(commands.Cog):
             return
 
         li = server_data[guild_key][1][index]
+
         list_role = discord.utils.get(ctx.guild.roles, id=li[1])
 
         if ctx.author.id in li[2]:
+            await ctx.send(f'You are already in the **yes** section of **\'{li[0]}\'**.')
             return
         if ctx.author.id in li[3]:
             li[3].remove(ctx.author.id)
@@ -189,6 +213,8 @@ class Commands(commands.Cog):
             await ctx.author.add_roles(list_role)
 
         save(server_data)
+
+        await ctx.send(f'Added you to the **yes** section of **\'{li[0]}\'**.')
 
     '''
     Command that allows users to add themselves to the no category of a list
@@ -210,6 +236,7 @@ class Commands(commands.Cog):
         list_role = discord.utils.get(ctx.guild.roles, id=li[1])
 
         if ctx.author.id in li[3]:
+            await ctx.send(f'You are already in the **no** section of **\'{li[0]}\'**.')
             return
         if ctx.author.id in li[2]:
             li[2].remove(ctx.author.id)
@@ -224,6 +251,8 @@ class Commands(commands.Cog):
             await ctx.author.remove_roles(list_role)
 
         save(server_data)
+
+        await ctx.send(f'Added you to the **no** section of **\'{li[0]}\'**.')
 
     '''
     Command that allows users to add themselves to the maybe category of a list
@@ -244,6 +273,7 @@ class Commands(commands.Cog):
         list_role = discord.utils.get(ctx.guild.roles, id=li[1])
 
         if ctx.author.id in li[4]:
+            await ctx.send(f'You are already in the **maybe** section of **\'{li[0]}\'**.')
             return
         if ctx.author.id in li[2]:
             li[2].remove(ctx.author.id)
@@ -258,6 +288,8 @@ class Commands(commands.Cog):
             await ctx.author.remove_roles(list_role)
 
         save(server_data)
+
+        await ctx.send(f'Added you to the **maybe** section of **\'{li[0]}\'**.')
 
     '''
     Command that displays all the lists for the server
@@ -312,6 +344,7 @@ class Commands(commands.Cog):
         li = server_data[guild_key][1][index]
         list_name = li[0]
         yes_members_lists, no_members_lists, maybe_members_list = li[2], li[3], li[4]
+        # quote text will not occur without the empty white space characters \u200b
         yes_names, no_names, maybe_names = '>>> \u200b', '>>> \u200b', '>>> \u200b'
 
         def swap_ids_for_names(member_id: int):
@@ -319,7 +352,7 @@ class Commands(commands.Cog):
                 return member_list.get(str(x)) or ctx.guild.get_member(x).nick or ctx.guild.get_member(x).display_name
 
             name = get_name(member_id)
-            if len(name) >= 17:
+            if len(name) >= 20:
                 name = f'{name[0:16]}...'
             return name
 
@@ -334,9 +367,9 @@ class Commands(commands.Cog):
             color=embed_color
         )
 
-        embed.add_field(name=':smiley: **__Yes__                                        **', value=yes_names)
-        embed.add_field(name=':rage: **__No__                                        **', value=no_names)
-        embed.add_field(name=':thinking: **__Maybe__**', value=maybe_names)
+        embed.add_field(name=f':smiley: **Yes ({len(yes_members_lists)})                   **', value=yes_names)
+        embed.add_field(name=f':rage: **No ({len(no_members_lists)})                      **', value=no_names)
+        embed.add_field(name=f':thinking: **Maybe ({len(maybe_members_list)})**', value=maybe_names)
         embed.set_footer(text=f'\n=yes {i} to add yourself to the yes list\n=no {i} to add yourself to the no list\n=maybe {i} to add yourself to the maybe list')
         await ctx.send(embed=embed)
 
