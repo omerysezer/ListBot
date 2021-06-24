@@ -1,7 +1,10 @@
 import json
 import discord
+import logging
 from discord.ext import commands
 from JsonHandler import read, save
+
+logging.basicConfig(filename='error_log.log', level=logging.WARNING)
 
 
 class Events(commands.Cog):
@@ -55,6 +58,10 @@ class Events(commands.Cog):
         if isinstance(error, commands.ArgumentParsingError):
             await ctx.send("Please don't put quotes `(\")` in your name, it hurts my robot head.")
             return
+        if isinstance(error, commands.MissingRequiredArgument):
+            return
+
+        logging.warning(error)
         raise error
 
 

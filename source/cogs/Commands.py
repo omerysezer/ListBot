@@ -19,7 +19,7 @@ class Commands(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def setname(self, ctx, member: Optional[discord.Member] = None, *, name):
-        new_name = ''.join(char for char in name if char.isalnum() or char == ' ')
+        new_name = discord.utils.remove_markdown(name)
 
         if not new_name:
             await ctx.send('My robotic brain couldn\'t handle that name. Try a different name.')
@@ -46,7 +46,7 @@ class Commands(commands.Cog):
             await ctx.channel.send(f'The name for {member.mention} has been set to **\'{new_name}\'**')
             return
 
-        await ctx.channel.send(f'Your name has been set to **\'{new_name}\'**')
+        await ctx.channel.send(f'Your name has been set to **\'{new_name}\'**.')
 
     '''
     command that allows the user to see what their current nickname is
@@ -74,7 +74,7 @@ class Commands(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def create(self, ctx, *, list_name):
-        name = ''.join(char for char in list_name if char.isalnum() or char == ' ')
+        name = discord.utils.remove_markdown(list_name)
 
         if not name:
             await ctx.send('My robotic brain couldn\'t handle that name. Try a different name.')
@@ -159,12 +159,10 @@ class Commands(commands.Cog):
             await ctx.send('Sorry the timer ran out and I stopped listening.')
             return
 
-        new_name = message.content
+        new_name = discord.utils.remove_markdown(message.content)
 
         if len(new_name) >= 100:
             new_name = f'{new_name[0:96]}...'
-
-        new_name = ''.join(char for char in new_name if char.isalnum() or char == ' ')
 
         if not new_name:
             await ctx.send('My robotic brain couldn\'t handle that name. Try a different name.')
