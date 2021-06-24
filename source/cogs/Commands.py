@@ -152,7 +152,7 @@ class Commands(commands.Cog):
         def check(msg):
             return msg.author == ctx.author and msg.channel == ctx.channel
 
-        await ctx.send(f'What do you want to rename `\'{list_name}\'` to? (Please respond within 1 minute)')
+        await ctx.send(f'What do you want to rename **\'{list_name}\'** to? (Please respond within 1 minute)')
         try:
             message = await self.bot.wait_for('message', check=check, timeout=60)
         except asyncio.TimeoutError:
@@ -173,7 +173,7 @@ class Commands(commands.Cog):
         li[0] = new_name
         save(server_data)
 
-        await ctx.send(f'Changed the list name from `{list_name}` to `{new_name}`')
+        await ctx.send(f'Changed the list name from **\'{list_name}\'** to **\'{new_name}\'**.')
 
     '''
     Command that allows the user to add themselves to the yes category of a list
