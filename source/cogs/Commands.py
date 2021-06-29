@@ -92,10 +92,10 @@ class Commands(commands.Cog):
 
         yes_list, no_list, maybe_list = [], [], []
         server_data[guild_id][1].append([name, role_id, yes_list, no_list, maybe_list])
-
+        list_index = len(server_data[guild_id][1])
         save(server_data)
 
-        await ctx.channel.send(f'Created a new list: \'{name}\'')
+        await ctx.invoke(self.bot.get_command('list'), i=list_index)
 
     '''
     Command that lets users delete a list
@@ -126,7 +126,7 @@ class Commands(commands.Cog):
 
         save(server_data)
 
-        await ctx.send(f'Deleted the list {name}.')
+        await ctx.send(f'Deleted the list **\'{name}\'**.')
 
     '''
     Command that lets users rename a specified list
