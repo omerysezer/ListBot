@@ -283,7 +283,7 @@ class Commands(commands.Cog):
             await ctx.author.remove_roles(list_role)
         if ctx.author.id not in li[4]:
             li[4].append(ctx.author.id)
-            await ctx.author.remove_roles(list_role)
+            await ctx.author.add_roles(list_role)
 
         save(server_data)
 
