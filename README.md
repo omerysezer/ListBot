@@ -13,3 +13,7 @@ Finally, users are able to set community specific nicknames for themselves, so t
 ![image](https://user-images.githubusercontent.com/39203620/194157009-6a744c63-85ba-4e34-98ba-469be89d77a6.png)
 
 ![image](https://user-images.githubusercontent.com/39203620/194157257-ab8586f1-89a2-4964-be81-87e9a9017e51.png)
+
+(These roles were automatically generated when the list was created and assigned to users who added themselves to the yes section.)
+![image](https://user-images.githubusercontent.com/39203620/194157639-c75757d3-3939-4ba2-977f-eb184aaf559d.png)
+
